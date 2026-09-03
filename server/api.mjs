@@ -78,10 +78,32 @@ async function writeState(next) {
   return state
 }
 
-/** Hand a `harness://…` deep link to the OS. `open` gets an argument list, never a shell string. */
-function launch(url) {
-  const child = spawn('open', [url], { stdio: 'ignore', detached: true })
+/**
+ * Hand a harness result to the OS. Two shapes, never a shell string:
+ *   - `{ spawn: { command, args } }` — argv list (Cursor CLI, etc.)
+ *   - a URL or path string — `open` on macOS, `xdg-open` elsewhere
+ */
+function launch(target) {
+  let command
+  let args
+  if (target && typeof target === 'object' && target.command) {
+    command = target.command
+    args = Array.isArray(target.args) ? target.args.map(String) : []
+  } else if (typeof target === 'string' && target) {
+    command = process.platform === 'darwin' ? 'open' : 'xdg-open'
+    args = [target]
+  } else {
+    return
+  }
+  const child = spawn(command, args, { stdio: 'ignore', detached: true })
   child.unref()
+}
+
+/** Apply a harness open/new-session result — either a deep link URL or a CLI spawn. */
+function launchResult(result) {
+  if (!result?.ok) return
+  if (result.spawn) launch(result.spawn)
+  else if (result.url) launch(result.url)
 }
 
 /**
@@ -229,7 +251,7 @@ export async function apiMiddleware(req, res, next) {
     if (url.pathname === '/api/open' && req.method === 'POST') {
       const { harness, ref } = await readJsonBody(req)
       const result = harnessOpenThread(harness, ref)
-      if (result.ok) launch(result.url)
+      launchResult(result)
       return send(res, result.ok ? 200 : 400, result)
     }
 
@@ -243,7 +265,7 @@ export async function apiMiddleware(req, res, next) {
         return send(res, 200, { ok: true })
       }
       const result = harnessNewSession(harness || (await defaultHarness()), dir)
-      if (result.ok) launch(result.url)
+      launchResult(result)
       return send(res, result.ok ? 200 : 400, result)
     }
 

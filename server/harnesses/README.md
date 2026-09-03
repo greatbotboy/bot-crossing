@@ -48,11 +48,17 @@ broken adapter costs you its own threads and nothing else. Prefer that over retu
 
 ### `openThread(ref)` / `newSession(dir)`
 
-Return `{ ok: true, url }` and the server hands that URL to the OS opener. `openThread` gets
-the `ref` from the thread it belongs to; `newSession` gets an absolute directory that the
-server has already checked still exists.
+Return one of:
 
-If your harness has no deep link, return `{ ok: false, error: '…' }` and say why — the UI
+- `{ ok: true, url }` — a deep link or path; the server hands it to `open` (macOS) or
+  `xdg-open` (Linux)
+- `{ ok: true, spawn: { command, args } }` — an argv list the server `spawn`s directly
+  (used by Cursor, which has no composer deep link)
+
+`openThread` gets the `ref` from the thread it belongs to; `newSession` gets an absolute
+directory that the server has already checked still exists.
+
+If your harness has no way to open, return `{ ok: false, error: '…' }` and say why — the UI
 shows the message rather than pretending the click worked.
 
 ### `setArchived(ref, archived)`
@@ -136,6 +142,12 @@ Verified on a real machine:
   `~/Library/Application Support/Claude/claude-code-sessions/<account>/<org>/local_*.json`;
   CLI transcripts in `~/.claude/projects/<encoded-cwd>/<sessionId>.jsonl`; live processes in
   `~/.claude/sessions/*.json`. Implemented in `claude-code.mjs`.
+- **Cursor** — composer metadata in
+  `~/.config/Cursor/User/globalStorage/state.vscdb` (`composerHeaders` table; on macOS under
+  `~/Library/Application Support/Cursor/…`); transcripts in
+  `~/.cursor/projects/<slug>/agent-transcripts/<uuid>/<uuid>.jsonl` (slug = absolute path with
+  `/` and `_` turned into `-`). Open/New spawn the `cursor` CLI; archive flips `isArchived` on
+  the header row. Implemented in `cursor.mjs`.
 - **Codex CLI** — transcripts in `~/.codex/sessions/YYYY/MM/DD/rollout-<iso>-<uuid>.jsonl`,
   with records shaped `{ timestamp, type, payload }`, and what looks like an index at
   `~/.codex/session_index.jsonl`. Not implemented yet.

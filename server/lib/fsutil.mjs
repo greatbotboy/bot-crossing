@@ -21,6 +21,26 @@ export async function readHead(file, bytes) {
   }
 }
 
+/** Read the last chunk of a file — used for recent turn_ended / error markers. */
+export async function readTail(file, bytes) {
+  const fh = await fsp.open(file, 'r')
+  try {
+    const stat = await fh.stat()
+    const start = Math.max(0, stat.size - bytes)
+    const buf = Buffer.allocUnsafe(Math.min(bytes, stat.size))
+    const { bytesRead } = await fh.read(buf, 0, buf.length, start)
+    let text = buf.subarray(0, bytesRead).toString('utf8')
+    // Drop a leading partial line when we did not start at byte 0.
+    if (start > 0) {
+      const nl = text.indexOf('\n')
+      text = nl === -1 ? '' : text.slice(nl + 1)
+    }
+    return text
+  } finally {
+    await fh.close()
+  }
+}
+
 /** Parse a JSONL blob, skipping the partial or malformed lines a live file always has. */
 export function jsonLines(text) {
   const out = []

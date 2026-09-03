@@ -24,9 +24,9 @@ second process. For a built version, `npm start` (build + serve) or `npm run ser
 `dist/` already exists. Binds to `127.0.0.1`, and answers only its own page — see
 [Keeping it local](#keeping-it-local).
 
-**macOS only, for now.** Opening a thread, revealing a folder and starting a new session all
-go through `open(1)` and a `harness://` deep link. The scanning half is portable; nobody has
-done the Linux or Windows side of the opener yet.
+**Opens work on macOS and Linux.** Scanning is portable; open / reveal / new-session use
+`open` on macOS and `xdg-open` on Linux, or a harness-supplied CLI spawn (Cursor uses the
+`cursor` command). Windows openers are still undone.
 
 ## Which harnesses work
 
@@ -37,10 +37,10 @@ somebody writing that adapter.
 | Harness | Status |
 | --- | --- |
 | **[Claude Code](https://claude.com/claude-code)** (Anthropic) | ✅ **Supported** — desktop app and CLI, including worktrees, live-process detection and archiving |
+| **[Cursor](https://cursor.com)** | ✅ **Supported** — agent and plan composers via local SQLite + transcripts; Open/New use the `cursor` CLI |
 | [Codex CLI](https://developers.openai.com/codex/cli) (OpenAI) | ⬜ Not yet — transcripts found at `~/.codex/sessions/`, [notes here](server/harnesses/README.md#starting-points) |
 | [OpenCode](https://opencode.ai) | ⬜ Not yet |
 | [Antigravity CLI](https://antigravity.google) (Google) | ⬜ Not yet — the successor to Gemini CLI, which Google stopped serving individual accounts on 18 June 2026 |
-| [Cursor](https://cursor.com) (`cursor-agent`) | ⬜ Not yet |
 | [Amp](https://ampcode.com) (Sourcegraph) | ⬜ Not yet |
 | [Aider](https://aider.chat) | ⬜ Not yet |
 | [Goose](https://block.github.io/goose/) (Block) | ⬜ Not yet |
