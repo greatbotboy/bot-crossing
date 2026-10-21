@@ -1,5 +1,8 @@
 # Bot Crossing — your agent threads, as a colony
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/Node-20%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+
 **[botcrossing.com](https://botcrossing.com)**
 
 Every coding-agent thread on this Mac is a little astronaut. They walk out of the ship, claim
